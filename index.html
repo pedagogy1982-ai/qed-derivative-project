@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>미분계수 실측 프로젝트</title>
+<meta name="description" content="50m 전력질주와 경사면 공 굴리기로 순간변화율을 실측하는 5인 수학 동아리의 실험 설계보고서">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+<script>
+  window.MathJax = {
+    tex: { displayMath: [['\\[', '\\]']], inlineMath: [['\\(', '\\)']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js" id="MathJax-script"></script>
+
+<style>
+  :root {
+    --paper: #F1F5EF;
+    --paper-line: #DCE4D8;
+    --card: #FBFCF9;
+    --card-alt: #EEF2EA;
+    --ink: #1A2420;
+    --ink-soft: #51604F;
+    --ink-faint: #8A9587;
+    --border: #CBD6C5;
+    --track: #C8481F;
+    --track-soft: #F3E1D6;
+    --slope: #256C55;
+    --slope-soft: #DDEBE1;
+    --warn-bg: #FBECD9;
+    --warn-border: #E3B36B;
+    --warn-ink: #6B4A16;
+    --shadow: 0 1px 2px rgba(26,36,32,0.06), 0 6px 20px rgba(26,36,32,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #12160F; --paper-line: #232B20; --card: #191F16; --card-alt: #1F2619;
+      --ink: #E9EFE4; --ink-soft: #AEBBA8; --ink-faint: #6F7C6C; --border: #2C3627;
+      --track: #F0784B; --track-soft: #362219; --slope: #57C79E; --slope-soft: #163027;
+      --warn-bg: #2E2515; --warn-border: #6E5426; --warn-ink: #E8C88C;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #12160F; --paper-line: #232B20; --card: #191F16; --card-alt: #1F2619;
+    --ink: #E9EFE4; --ink-soft: #AEBBA8; --ink-faint: #6F7C6C; --border: #2C3627;
+    --track: #F0784B; --track-soft: #362219; --slope: #57C79E; --slope-soft: #163027;
+    --warn-bg: #2E2515; --warn-border: #6E5426; --warn-ink: #E8C88C;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background:
+      linear-gradient(var(--paper-line) 1px, transparent 1px) 0 0 / 100% 32px,
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px) 0 0 / 32px 100%,
+      var(--paper);
+    background-attachment: local;
+    color: var(--ink);
+    font-family: 'Gowun Dodum', 'Malgun Gothic', sans-serif;
+    line-height: 1.7;
+    padding: 0 20px 96px;
+  }
+  ::selection { background: var(--track-soft); color: var(--ink); }
+  h1, h2, h3 { font-family: 'Gowun Batang', serif; text-wrap: balance; margin: 0; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .page { max-width: 840px; margin: 0 auto; }
+
+  /* ---------- Auth bar ---------- */
+  .authbar {
+    max-width: 840px; margin: 0 auto; padding: 20px 0 0;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  }
+  .authbar-left { font-family:'JetBrains Mono',monospace; font-size:0.76rem; color:var(--ink-faint); letter-spacing:0.06em; text-transform:uppercase; }
+  .auth-btn {
+    font-family:'Gowun Dodum',sans-serif; font-size:0.86rem; font-weight:600;
+    padding:8px 18px; border-radius:999px; cursor:pointer; border:1px solid var(--track);
+    background:var(--track); color:#fff; display:inline-flex; align-items:center; gap:8px;
+  }
+  .auth-btn:hover { filter: brightness(1.05); }
+  .auth-btn.ghost { background:var(--card); color:var(--ink); border-color:var(--border); }
+  .user-chip { font-size:0.86rem; color:var(--ink-soft); display:flex; align-items:center; gap:10px; }
+  .user-chip b { color:var(--ink); font-family:'Gowun Batang',serif; }
+  [hidden] { display:none !important; }
+
+  /* ---------- Notice banners ---------- */
+  .notice-banner {
+    max-width:840px; margin:14px auto 0; padding:12px 16px; border-radius:10px;
+    font-size:0.85rem; display:none; align-items:center; gap:8px; line-height:1.5;
+  }
+  .notice-banner.show { display:flex; }
+  .notice-banner.warn { background:var(--warn-bg); border:1px solid var(--warn-border); color:var(--warn-ink); }
+  .notice-banner.ok { background:var(--slope-soft); border:1px solid var(--slope); color:var(--slope); }
+  .notice-banner.info { background:var(--card-alt); border:1px solid var(--border); color:var(--ink-soft); }
+
+  body.is-readonly .editable-cell,
+  body.is-readonly .reflect-text,
+  body.is-readonly .data-input { cursor: not-allowed; opacity: 0.7; }
+
+  /* ---------- Header ---------- */
+  header.hero { padding: 40px 0 40px; border-bottom: 2px solid var(--border); margin-bottom: 48px; }
+  .kicker {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ink-faint); margin-bottom: 18px;
+  }
+  .kicker .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--track); flex: none; }
+  h1.title { font-size: clamp(2rem, 5vw, 2.9rem); font-weight: 700; line-height: 1.25; color: var(--ink); max-width: 14ch; }
+  h1.title em { font-style: normal; color: var(--track); }
+  .subtitle { margin-top: 14px; color: var(--ink-soft); font-size: 1.05rem; max-width: 58ch; }
+  .meta-row { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 12px; }
+  .meta-chip { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 0.85rem; color: var(--ink-soft); display: flex; gap: 8px; align-items: baseline; }
+  .meta-chip b { color: var(--ink); font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+  /* ---------- Sections ---------- */
+  section { margin-bottom: 56px; }
+  .sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px; }
+  .sec-num { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--track); border: 1px solid var(--track); border-radius: 999px; padding: 3px 10px; flex: none; }
+  .sec-num.alt { color: var(--slope); border-color: var(--slope); }
+  h2.sec-title { font-size: 1.55rem; color: var(--ink); }
+  .sec-note { color: var(--ink-faint); font-size: 0.92rem; margin-top: 2px; }
+  p { margin: 0 0 14px; max-width: 68ch; color: var(--ink); }
+  p.lede { color: var(--ink-soft); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 26px 28px; box-shadow: var(--shadow); }
+
+  /* ---------- Theory diagram ---------- */
+  .theory-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: center; }
+  @media (max-width: 700px) { .theory-grid { grid-template-columns: 1fr; } }
+  .formula-box { background: var(--card-alt); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px 18px; margin: 10px 0; color: var(--ink); overflow-x: auto; }
+  .formula-box .label { color: var(--ink-faint); font-family: 'Gowun Dodum', sans-serif; font-size: 0.82rem; display: block; margin-bottom: 8px; }
+  .formula-box mjx-container { color: var(--ink) !important; }
+  .diagram-wrap { background: var(--card-alt); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+  .diagram-wrap svg { width: 100%; height: auto; display: block; }
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 10px; font-size: 0.82rem; color: var(--ink-soft); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 16px; height: 3px; border-radius: 2px; display: inline-block; }
+
+  /* ---------- Tables ---------- */
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; min-width: 480px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; border-bottom: 2px solid var(--border); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.num, th.num { font-family: 'JetBrains Mono', monospace; color: var(--ink-soft); }
+
+  .editable-cell { cursor: text; border-radius: 4px; transition: background 0.15s ease, box-shadow 0.15s ease; outline: none; }
+  .editable-cell:hover { background: var(--card-alt); box-shadow: inset 0 -1.5px 0 var(--ink-faint); }
+  .editable-cell:focus { background: var(--card-alt); box-shadow: inset 0 -1.5px 0 var(--track); }
+
+  .live-tag { display: inline-block; margin-left: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.02em; color: var(--track); background: var(--track-soft); border-radius: 999px; padding: 2px 9px; vertical-align: middle; }
+  .table-hint { color: var(--ink-faint); font-size: 0.86rem; margin: -4px 0 12px; }
+  .data-input {
+    width: 68px; font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; font-size: 0.88rem;
+    color: var(--ink); background: var(--card-alt); border: 1px solid var(--border); border-radius: 6px; padding: 5px 7px; text-align: right;
+  }
+  .data-input.dist-input { width: 60px; }
+  .data-input:focus { outline: none; border-color: var(--track); background: var(--card); }
+  .data-input:disabled { color: var(--ink-faint); background: transparent; border-color: transparent; }
+  .summary-row td { font-weight: 700; border-top: 2px solid var(--border); background: var(--card-alt); }
+  .row-actions { text-align: center; width: 34px; }
+  .remove-row-btn { font-family: 'JetBrains Mono', monospace; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border); background: var(--card-alt); color: var(--ink-faint); cursor: pointer; line-height: 1; }
+  .remove-row-btn:hover { color: var(--track); border-color: var(--track); }
+  .add-row-btn { margin-top: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--slope); background: var(--slope-soft); border: 1px solid var(--slope); border-radius: 8px; padding: 7px 16px; cursor: pointer; }
+  .add-row-btn:hover { filter: brightness(0.96); }
+  .add-row-btn:disabled, .data-input:disabled ~ .remove-row-btn { opacity: 0.5; cursor: not-allowed; }
+
+  .version-tag { margin-left: 10px; color: var(--ink-faint); }
+
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 18px; }
+  .tab-btn {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: 600;
+    padding: 7px 16px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--card-alt); color: var(--ink-soft); cursor: pointer;
+  }
+  .tab-btn.active.a { background: var(--track); border-color: var(--track); color: #fff; }
+  .tab-btn.active.b { background: var(--slope); border-color: var(--slope); color: #fff; }
+  .tab-panel[hidden] { display: none; }
+
+  .panel-meta-row { display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; margin-bottom: 16px; }
+  .panel-meta-row label { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+  .name-input { flex: 1; min-width: 140px; max-width: 260px; text-align: left; }
+  .interval-control { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 0.88rem; color: var(--ink-soft); }
+  .interval-control input { width: 56px; }
+
+  /* ---------- Experiment cards ---------- */
+  .exp-card { border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
+  .exp-head { padding: 22px 28px; display: flex; align-items: center; gap: 14px; }
+  .exp-head.a { background: var(--track-soft); }
+  .exp-head.b { background: var(--slope-soft); }
+  .exp-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 600; padding: 5px 11px; border-radius: 999px; background: var(--card); }
+  .exp-head.a .exp-badge { color: var(--track); }
+  .exp-head.b .exp-badge { color: var(--slope); }
+  .exp-head h3 { font-size: 1.3rem; }
+  .exp-body { background: var(--card); padding: 26px 28px 30px; }
+  .subhead { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); margin: 22px 0 10px; }
+  .subhead:first-child { margin-top: 0; }
+  ol.steps { margin: 0; padding-left: 0; list-style: none; counter-reset: step; }
+  ol.steps li { counter-increment: step; position: relative; padding-left: 38px; margin-bottom: 12px; color: var(--ink); }
+  ol.steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--card-alt); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--ink-soft); }
+  ul.plain { margin: 0 0 14px; padding-left: 20px; color: var(--ink); }
+  ul.plain li { margin-bottom: 5px; }
+  .safety { display: flex; gap: 14px; background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 12px; padding: 16px 18px; margin-top: 20px; color: var(--warn-ink); font-size: 0.92rem; }
+  .safety .mark { font-family: 'JetBrains Mono', monospace; font-weight: 700; flex: none; }
+
+  /* ---------- Checklist / roles / timeline ---------- */
+  .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 700px) { .plan-grid { grid-template-columns: 1fr; } }
+  .checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .checklist li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.94rem; color: var(--ink); }
+  .checklist .box { flex: none; width: 16px; height: 16px; border: 1.5px solid var(--ink-faint); border-radius: 4px; margin-top: 3px; }
+  .checklist .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--ink-faint); }
+  .timeline { list-style: none; margin: 0; padding: 0; }
+  .timeline li { display: grid; grid-template-columns: 68px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px dashed var(--border); }
+  .timeline li:last-child { border-bottom: none; }
+  .timeline .wk { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--track); font-weight: 600; }
+  .timeline .task b { display: block; color: var(--ink); margin-bottom: 2px; }
+  .timeline .task span { color: var(--ink-soft); font-size: 0.88rem; }
+
+  /* ---------- Poster mock ---------- */
+  .poster-frame { background: var(--card-alt); border: 1px solid var(--border); border-radius: 18px; padding: 28px; }
+  .poster-sheet { background: var(--card); border: 2px solid var(--ink); border-radius: 6px; padding: 14px; max-width: 420px; margin: 0 auto; box-shadow: var(--shadow); }
+  .poster-grid { display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, auto); gap: 8px; }
+  .poster-panel { border: 1px solid var(--border); border-radius: 4px; padding: 10px 10px 8px; min-height: 74px; display: flex; flex-direction: column; gap: 3px; }
+  .poster-panel .pnum { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--ink-faint); }
+  .poster-panel .ptitle { font-size: 0.78rem; font-weight: 600; color: var(--ink); line-height: 1.3; }
+  .poster-panel .pdesc { font-size: 0.68rem; color: var(--ink-soft); line-height: 1.35; }
+  .poster-panel.title-panel { grid-column: 1 / -1; background: var(--ink); }
+  .poster-panel.title-panel .ptitle { color: var(--paper); font-size: 0.9rem; }
+  .poster-panel.title-panel .pdesc { color: var(--ink-faint); }
+  .poster-panel.a { background: var(--track-soft); }
+  .poster-panel.b { background: var(--slope-soft); }
+  .poster-caption { text-align: center; margin-top: 14px; font-size: 0.82rem; color: var(--ink-faint); }
+  .panel-key { display: grid; gap: 10px; margin-top: 24px; }
+  .panel-key-row { display: grid; grid-template-columns: 32px 1fr; gap: 12px; align-items: start; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .panel-key-row:last-child { border-bottom: none; }
+  .panel-key-row .num { font-family: 'JetBrains Mono', monospace; color: var(--ink-faint); font-size: 0.85rem; }
+  .panel-key-row b { color: var(--ink); }
+  .panel-key-row span { color: var(--ink-soft); font-size: 0.9rem; }
+
+  /* ---------- Reflections ---------- */
+  .reflection-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 18px; }
+  @media (max-width: 700px) { .reflection-grid { grid-template-columns: 1fr; } }
+  .reflect-card { background: var(--card-alt); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+  .reflect-card.wide { grid-column: 1 / -1; }
+  .reflect-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .reflect-name-label { font-family: 'Gowun Batang', serif; font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+  .reflect-status { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--slope); opacity: 0; transition: opacity 0.3s ease; flex: none; white-space: nowrap; }
+  .reflect-status.show { opacity: 1; }
+  .reflect-text { width: 100%; min-height: 100px; resize: vertical; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-family: 'Gowun Dodum', sans-serif; font-size: 0.92rem; color: var(--ink); line-height: 1.7; }
+  .reflect-text:focus { outline: none; border-color: var(--track); }
+  .reflect-text::placeholder { color: var(--ink-faint); }
+  .reflect-text:disabled { color: var(--ink-faint); }
+
+  footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--ink-faint); font-size: 0.82rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+</style>
+</head>
+<body class="is-readonly">
+
+<div class="authbar">
+  <div class="authbar-left">미분계수 실측 프로젝트 &middot; 공유 문서 <span id="versionTag" class="version-tag">불러오는 중…</span></div>
+  <div>
+    <button id="loginBtn" class="auth-btn">Google로 로그인</button>
+    <div id="userChip" class="user-chip" hidden>
+      <b id="userName"></b>
+      <button id="logoutBtn" class="auth-btn ghost">로그아웃</button>
+    </div>
+  </div>
+</div>
+<div id="setupBanner" class="notice-banner warn"></div>
+<div id="syncBanner" class="notice-banner"></div>
+
+<div class="page">
+
+  <header class="hero">
+    <div class="kicker"><span class="dot"></span>실험 설계보고서 &middot; 수학 동아리</div>
+    <h1 class="title">사람이 뛰고 공이 구르는<br><em>그 순간</em>의 변화율을 재다</h1>
+    <p class="subtitle">50m 전력질주와 경사면 공 굴리기, 두 개의 실측 실험으로 평균변화율과 순간변화율(미분계수)의 차이를 직접 확인하는 프로젝트입니다.</p>
+    <div class="meta-row">
+      <div class="meta-chip">팀 규모 <b>5명</b></div>
+      <div class="meta-chip">실험 종목 <b>2건</b></div>
+      <div class="meta-chip">발표 형식 <b>전지 포스터 · 8섹터</b></div>
+      <div class="meta-chip">진행 상태 <b>촬영 완료 · 분석 전</b></div>
+    </div>
+  </header>
+
+  <!-- 01 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <div>
+        <h2 class="sec-title">프로젝트 개요</h2>
+        <div class="sec-note">왜 미분계수를 몸으로 확인하려 하는가</div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="lede">교과서의 미분계수는 그래프 위의 기호로만 배우기 쉽습니다. 이 프로젝트는 실제로 달리고 굴러가는 물체를 촬영해 위치–시간 데이터를 얻고, 그 데이터에서 <b>평균변화율</b>과 <b>순간변화율(미분계수)</b>을 직접 계산해 두 개념의 차이를 눈으로 확인하는 것을 목표로 합니다.</p>
+      <div class="theory-grid">
+        <div>
+          <div class="formula-box">
+            <span class="label">평균변화율 (구간 [a, b])</span>
+            \[ \dfrac{s(b) - s(a)}{b - a} \]
+          </div>
+          <div class="formula-box">
+            <span class="label">순간변화율 = 미분계수 (t = a)</span>
+            \[ \lim_{h \to 0} \dfrac{s(a+h) - s(a)}{h} = s'(a) \]
+          </div>
+          <p style="margin-top:16px;">두 점 P, Q를 잇는 <b style="color:var(--track)">할선</b>의 기울기가 평균변화율이고, Q를 P로 한없이 가까이 보낼 때 할선이 다가가는 <b style="color:var(--slope)">접선</b>의 기울기가 순간변화율(미분계수)입니다. 실험에서는 h를 완전히 0으로 만들 수 없으므로, 영상의 <b>한 프레임 간격</b>처럼 실제로 만들 수 있는 가장 작은 Δt로 근사합니다.</p>
+        </div>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 300 200" role="img" aria-label="위치-시간 그래프에서 할선이 접선으로 수렴하는 모습">
+            <line x1="30" y1="10" x2="30" y2="180" stroke="var(--ink-faint)" stroke-width="1"/>
+            <line x1="30" y1="180" x2="290" y2="180" stroke="var(--ink-faint)" stroke-width="1"/>
+            <text x="8" y="20" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--ink-faint)">s</text>
+            <text x="278" y="195" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--ink-faint)">t</text>
+            <path d="M 30,170 Q 150,150 270,30" fill="none" stroke="var(--ink-soft)" stroke-width="2"/>
+            <line x1="119.8" y1="142.6" x2="180.2" y2="107.4" stroke="var(--slope)" stroke-width="2.5"/>
+            <line x1="150" y1="125" x2="210" y2="125" stroke="var(--track)" stroke-width="1" stroke-dasharray="3 3"/>
+            <line x1="210" y1="125" x2="210" y2="84" stroke="var(--track)" stroke-width="1" stroke-dasharray="3 3"/>
+            <line x1="150" y1="125" x2="210" y2="84" stroke="var(--track)" stroke-width="2.5"/>
+            <circle cx="150" cy="125" r="4" fill="var(--ink)"/>
+            <circle cx="210" cy="84" r="4" fill="var(--ink)"/>
+            <text x="138" y="140" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--ink)">P</text>
+            <text x="216" y="80" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--ink)">Q</text>
+          </svg>
+          <div class="legend">
+            <span><span class="swatch" style="background:var(--track);"></span>할선 (평균변화율, P–Q)</span>
+            <span><span class="swatch" style="background:var(--slope);"></span>접선 (순간변화율, P에서)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <div>
+        <h2 class="sec-title">실험 설계 개요</h2>
+        <div class="sec-note">같은 원리, 두 가지 운동으로 검증한다</div>
+      </div>
+    </div>
+    <div class="card">
+      <p>두 실험 모두 <b>“마커 통과 시각을 영상에서 읽어 위치–시간 데이터를 만들고, 그래프의 할선과 접선으로 미분계수를 근사한다”</b>는 동일한 절차를 따릅니다. 운동의 종류만 다르게 하여 개념이 특정 상황에 한정되지 않는다는 것을 함께 보입니다.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>구분</th><th>실험 A · 50m 전력질주</th><th>실험 B · 경사면 공 굴리기</th></tr></thead>
+          <tbody>
+            <tr><td>측정 대상</td><td>사람 (달리는 학생)</td><td>공 (구슬 또는 소형 공)</td></tr>
+            <tr><td>운동 형태</td><td>초반 가속 후 일정 속도에 근접</td><td>등가속도 운동 (이론상 포물선형 s–t)</td></tr>
+            <tr><td>측정 구간</td><td class="num">0 ~ 50 m</td><td class="num">경사로 전 구간 (예: 1~2 m)</td></tr>
+            <tr><td>예상 s–t 그래프</td><td>완만하게 기울기가 줄어드는 곡선</td><td>기울기가 점점 커지는 곡선</td></tr>
+            <tr><td>주목할 순간</td><td>25m 지점 통과 순간 등 임의 지점</td><td>출발 직후와 도착 직전 비교</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 실험 A -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <div>
+        <h2 class="sec-title">실험 A · 50m 전력질주</h2>
+        <div class="sec-note">달리는 학생의 순간속도를 미분계수로 확인</div>
+      </div>
+    </div>
+    <div class="exp-card">
+      <div class="exp-head a">
+        <span class="exp-badge">EXPERIMENT A</span>
+        <h3>사람이 만드는 s(t) 그래프</h3>
+      </div>
+      <div class="exp-body">
+        <p class="subhead">목적</p>
+        <p>50m를 달리는 동안의 구간별 평균속도와, 특정 순간(예: 25m 통과 순간)의 순간속도(미분계수)를 비교하여 “속도”라는 말이 실제로는 특정 시점의 미분계수임을 확인한다.</p>
+
+        <p class="subhead">준비물</p>
+        <ul class="plain">
+          <li>운동장 또는 직선 트랙 50m 구간</li>
+          <li>거리 마커(라바콘 등) 11개 — 0, 5, 10, … 50m 지점</li>
+          <li>줄자 (마커 간격 확인용)</li>
+          <li>이미 촬영한 달리기 영상 (측면 고정 촬영본)</li>
+          <li>영상분석 프로그램 — Tracker(무료) 또는 Kinovea, 또는 스마트폰 슬로우모션 재생</li>
+          <li>노트북, 스프레드시트(엑셀 · 구글시트)</li>
+          <li>보조 스톱워치 1개</li>
+        </ul>
+
+        <p class="subhead">진행 절차</p>
+        <ol class="steps">
+          <li>영상을 분석 프로그램에 불러오고, 화면 속 5m 간격 마커 사이의 실제 거리로 축척(스케일)을 보정한다.</li>
+          <li>영상을 프레임 단위로 재생하며 달리는 학생이 각 마커(0~50m)를 통과하는 순간의 시각 t를 기록한다.</li>
+          <li>거리(x)–시각(t) 표를 완성하고, 구간별 Δx/Δt(평균속도)를 계산한다.</li>
+          <li>특정 지점(예: 25m) 주변에서는 프레임 1~2개 단위로 더 촘촘히 위치를 읽어, 아주 작은 Δt에서의 평균변화율로 그 순간의 순간속도(미분계수)를 근사한다.</li>
+          <li>x–t 그래프를 그리고, 전체 구간의 할선과 25m 지점의 접선을 함께 표시해 두 값의 차이를 시각화한다.</li>
+        </ol>
+
+        <p class="subhead">데이터 기록 양식 <span class="live-tag">실시간 계산 · 실시간 공유</span></p>
+        <p class="table-hint">4명이 각자 달린 기록을 탭으로 나눠 입력합니다. 시간 간격을 정하고, 그 시각까지 이동한 거리(위치)를 입력하면 구간 Δx·평균속도가 자동으로 계산됩니다.</p>
+        <div class="tabs" id="tabsA" data-tab-group="A"></div>
+        <div id="panelsA"></div>
+
+        <div class="safety">
+          <span class="mark">주의</span>
+          <span>실제 전력질주 전 충분히 준비운동을 하고, 트랙 표면 상태(바닥 미끄럼, 장애물)를 미리 점검합니다. 마커는 발에 걸리지 않도록 트랙 바깥쪽에 낮게 배치합니다.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 실험 B -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num alt">04</span>
+      <div>
+        <h2 class="sec-title">실험 B · 경사면 공 굴리기</h2>
+        <div class="sec-note">등가속도 운동에서도 같은 방법이 통하는지 검증</div>
+      </div>
+    </div>
+    <div class="exp-card">
+      <div class="exp-head b">
+        <span class="exp-badge">EXPERIMENT B</span>
+        <h3>공이 만드는 s(t) 그래프</h3>
+      </div>
+      <div class="exp-body">
+        <p class="subhead">목적</p>
+        <p>경사로를 굴러 내려가는 공은 사람과 달리 (거의) 등가속도 운동을 한다. 같은 방식으로 미분계수를 구했을 때, 순간속도가 시간에 따라 일정하게 커지는 것을 확인하여 실험 A의 방법이 다른 운동에도 똑같이 적용됨을 보인다.</p>
+
+        <p class="subhead">준비물</p>
+        <ul class="plain">
+          <li>경사로 (긴 나무판 · 홈이 있는 레일 등, 각도 조절 가능하면 좋음)</li>
+          <li>공 또는 구슬 (굴러가며 튀지 않는 것)</li>
+          <li>눈금 테이프 또는 줄자 — 5~10cm 간격 위치 표시</li>
+          <li>각도기 (경사각 측정 · 기록용)</li>
+          <li>이미 촬영한 공 굴리기 영상 (경사면과 평행한 측면 고정 촬영본)</li>
+          <li>영상분석 프로그램 (실험 A와 동일)</li>
+        </ul>
+
+        <p class="subhead">진행 절차</p>
+        <ol class="steps">
+          <li>경사로 각도를 고정하고, 출발점부터 도착점까지 5~10cm 간격으로 눈금을 표시한다.</li>
+          <li>영상 속 눈금으로 축척을 보정한 뒤, 공이 각 눈금을 통과하는 시각을 프레임 단위로 기록한다.</li>
+          <li>거리–시각 표를 만들고 구간별 평균속도(Δx/Δt)를 계산한다.</li>
+          <li>출발 직후 구간과 도착 직전 구간 각각에서 순간속도(미분계수)를 근사해 두 값을 비교한다.</li>
+          <li>x–t 그래프와, 속도가 시간에 비례해 커지는지 확인하는 v–t 그래프를 함께 그린다.</li>
+        </ol>
+
+        <p class="subhead">데이터 기록 양식 <span class="live-tag">실시간 계산 · 실시간 공유</span></p>
+        <p class="table-hint">공 종류와 경사각이 다른 3번의 시도를 탭으로 나눠 기록합니다. 지점과 통과 시각을 입력하면 구간 Δx·Δt·평균속도가 자동으로 계산됩니다.</p>
+        <div class="tabs" id="tabsB" data-tab-group="B"></div>
+        <div id="panelsB"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 실행 계획 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">05</span>
+      <div>
+        <h2 class="sec-title">실행 계획</h2>
+        <div class="sec-note">준비물 · 역할 · 일정을 한 번에 정리</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:20px;">
+      <p class="subhead" style="margin-top:0;">준비물 체크리스트 (종합)</p>
+      <div class="plan-grid">
+        <ul class="checklist">
+          <li><span class="box"></span>거리 마커(라바콘) 11개 <span class="tag">A</span></li>
+          <li><span class="box"></span>줄자 · 눈금 테이프 <span class="tag">A·B</span></li>
+          <li><span class="box"></span>경사로 · 각도기 <span class="tag">B</span></li>
+          <li><span class="box"></span>공 · 구슬 <span class="tag">B</span></li>
+          <li><span class="box"></span>촬영 영상 (완료) <span class="tag">A·B</span></li>
+        </ul>
+        <ul class="checklist">
+          <li><span class="box"></span>영상분석 프로그램(Tracker 등) 설치 <span class="tag">A·B</span></li>
+          <li><span class="box"></span>노트북 · 스프레드시트 <span class="tag">A·B</span></li>
+          <li><span class="box"></span>데이터 기록지 인쇄본 <span class="tag">A·B</span></li>
+          <li><span class="box"></span>전지 8장 세트 · 마커펜 <span class="tag">포스터</span></li>
+          <li><span class="box"></span>그래프 인쇄용 프린터 <span class="tag">포스터</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <p class="subhead" style="margin-top:0;">역할 분담 (5인) <span class="live-tag">실시간 공유</span></p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>팀원</th><th>역할</th><th>담당 업무</th></tr></thead>
+          <tbody>
+            <tr><td>이도현</td><td class="editable-cell" contenteditable="false" data-role-idx="0" data-role-field="role">총괄 · 진행</td><td class="editable-cell" contenteditable="false" data-role-idx="0" data-role-field="task">전체 일정 관리, 두 실험 촬영·측정 총괄</td></tr>
+            <tr><td>우제연</td><td class="editable-cell" contenteditable="false" data-role-idx="1" data-role-field="role">영상 분석</td><td class="editable-cell" contenteditable="false" data-role-idx="1" data-role-field="task">프레임별 마커 통과 시각 추출 (실험 A, B)</td></tr>
+            <tr><td>김동윤</td><td class="editable-cell" contenteditable="false" data-role-idx="2" data-role-field="role">데이터 · 그래프</td><td class="editable-cell" contenteditable="false" data-role-idx="2" data-role-field="task">표 정리, x–t / v–t 그래프 작성</td></tr>
+            <tr><td>최장웅</td><td class="editable-cell" contenteditable="false" data-role-idx="3" data-role-field="role">계산 · 이론 검토</td><td class="editable-cell" contenteditable="false" data-role-idx="3" data-role-field="task">평균변화율·순간변화율 계산, 오차 검토</td></tr>
+            <tr><td>이종영</td><td class="editable-cell" contenteditable="false" data-role-idx="4" data-role-field="role">포스터 디자인</td><td class="editable-cell" contenteditable="false" data-role-idx="4" data-role-field="task">전지 8섹터 레이아웃 제작, 발표 자료 정리</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:12px; font-size:0.86rem; color:var(--ink-faint);">로그인 후 역할·담당 업무 칸을 클릭하면 바로 수정할 수 있고, 이 링크로 들어온 모든 팀원에게 반영됩니다.</p>
+    </div>
+
+    <div class="card">
+      <p class="subhead" style="margin-top:0;">진행 일정 (촬영 완료 · 이후 5주)</p>
+      <ul class="timeline">
+        <li><span class="wk">1주차</span><div class="task"><b>영상 분석</b><span>실험 A·B 영상에서 마커 통과 시각 추출, 원자료 표 작성</span></div></li>
+        <li><span class="wk">2주차</span><div class="task"><b>데이터 정리</b><span>구간별 평균변화율 계산, x–t 그래프 작성</span></div></li>
+        <li><span class="wk">3주차</span><div class="task"><b>미분계수 계산</b><span>특정 지점의 순간변화율 근사, 할선·접선 비교, 결과 분석</span></div></li>
+        <li><span class="wk">4주차</span><div class="task"><b>포스터 제작</b><span>전지 8섹터 레이아웃에 맞춰 데이터·그래프·설명 배치</span></div></li>
+        <li><span class="wk">5주차</span><div class="task"><b>발표 준비</b><span>리허설, 예상 질문 정리, 최종 점검</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 06 포스터 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">06</span>
+      <div>
+        <h2 class="sec-title">발표 포스터 기획 · 전지 8섹터</h2>
+        <div class="sec-note">이 설계보고서의 내용을 8칸에 어떻게 나눠 담을지</div>
+      </div>
+    </div>
+    <div class="card">
+      <p>전지 한 장을 8개 구역으로 나누어, 이론 → 실험 A → 실험 B → 결론의 흐름이 한눈에 읽히도록 배치합니다.</p>
+      <div class="poster-frame">
+        <div class="poster-sheet">
+          <div class="poster-grid">
+            <div class="poster-panel title-panel"><span class="pnum">01</span><span class="ptitle">제목 & 동아리 소개</span><span class="pdesc">프로젝트명, 팀원 5인, 탐구 동기</span></div>
+            <div class="poster-panel"><span class="pnum">02</span><span class="ptitle">탐구 배경 및 목적</span><span class="pdesc">왜 미분계수를 실측하는가</span></div>
+            <div class="poster-panel"><span class="pnum">03</span><span class="ptitle">이론적 배경</span><span class="pdesc">평균변화율 vs 순간변화율, 할선–접선 그림</span></div>
+            <div class="poster-panel a"><span class="pnum">04</span><span class="ptitle">실험 A 설계</span><span class="pdesc">50m 전력질주 · 방법 · 준비물</span></div>
+            <div class="poster-panel a"><span class="pnum">05</span><span class="ptitle">실험 A 결과</span><span class="pdesc">데이터표, x–t 그래프, 미분계수 값</span></div>
+            <div class="poster-panel b"><span class="pnum">06</span><span class="ptitle">실험 B 설계</span><span class="pdesc">경사면 공 굴리기 · 방법 · 준비물</span></div>
+            <div class="poster-panel b"><span class="pnum">07</span><span class="ptitle">실험 B 결과</span><span class="pdesc">데이터표, x–t / v–t 그래프</span></div>
+            <div class="poster-panel"><span class="pnum">08</span><span class="ptitle">결론 & 소감</span><span class="pdesc">두 실험 비교, 배운 점, 참고자료</span></div>
+          </div>
+        </div>
+        <p class="poster-caption">2열 × 4행 배치 예시 — 세로형 전지 기준. 실제 제작 시 섹터 순서·크기는 조정 가능합니다.</p>
+      </div>
+      <div class="panel-key">
+        <div class="panel-key-row"><span class="num">01–02</span><div><b>도입부</b> <span>— 동아리와 탐구 질문을 소개해 관람객의 눈길을 끄는 구역</span></div></div>
+        <div class="panel-key-row"><span class="num">03</span><div><b>이론 축</b> <span>— 섹션 01의 할선–접선 그림을 크게 재사용</span></div></div>
+        <div class="panel-key-row"><span class="num">04–05 / 06–07</span><div><b>실험 축</b> <span>— 설계와 결과를 짝지어, 두 실험을 좌우 또는 상하로 대비</span></div></div>
+        <div class="panel-key-row"><span class="num">08</span><div><b>마무리</b> <span>— 두 실험의 미분계수 값을 나란히 비교하며 결론 도출</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 소감문 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num alt">07</span>
+      <div>
+        <h2 class="sec-title">모임 소감문</h2>
+        <div class="sec-note">함께 모여 실험한 뒤, 각자의 생각을 남겨보세요</div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="lede">로그인하면 자신의 칸에 소감을 적을 수 있고, 저장하면 이 링크로 들어온 모든 팀원에게 실시간으로 보입니다.</p>
+      <div class="reflection-grid" id="reflectionGrid">
+        <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">이도현</span><span class="reflect-status" data-reflect-status="0"></span></div><textarea class="reflect-text" data-reflect-idx="0" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요." disabled></textarea></div>
+        <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">우제연</span><span class="reflect-status" data-reflect-status="1"></span></div><textarea class="reflect-text" data-reflect-idx="1" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요." disabled></textarea></div>
+        <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">김동윤</span><span class="reflect-status" data-reflect-status="2"></span></div><textarea class="reflect-text" data-reflect-idx="2" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요." disabled></textarea></div>
+        <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">최장웅</span><span class="reflect-status" data-reflect-status="3"></span></div><textarea class="reflect-text" data-reflect-idx="3" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요." disabled></textarea></div>
+        <div class="reflect-card wide"><div class="reflect-head"><span class="reflect-name-label">이종영</span><span class="reflect-status" data-reflect-status="4"></span></div><textarea class="reflect-text" data-reflect-idx="4" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요." disabled></textarea></div>
+      </div>
+      <p style="margin-top:14px; font-size:0.86rem; color:var(--ink-faint);">각자 자신의 구글 계정으로 로그인해서 자신의 칸에 적어주세요. (다른 사람 칸도 기술적으로는 수정 가능하니, 서로 존중해주세요.)</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>다음 모임 전 할 일 — 실험 A·B 영상을 Tracker(또는 Kinovea)에 불러와 마커 통과 시각부터 함께 추출하기</span>
+    <span>수학 동아리 · 미분계수 실측 프로젝트</span>
+  </footer>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
