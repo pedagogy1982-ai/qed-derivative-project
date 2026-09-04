@@ -100,10 +100,6 @@
   .notice-banner.ok { background:var(--slope-soft); border:1px solid var(--slope); color:var(--slope); }
   .notice-banner.info { background:var(--card-alt); border:1px solid var(--border); color:var(--ink-soft); }
 
-  body.is-readonly .editable-cell,
-  body.is-readonly .reflect-text,
-  body.is-readonly .data-input { cursor: not-allowed; opacity: 0.7; }
-
   /* ---------- Header ---------- */
   header.hero { padding: 40px 0 40px; border-bottom: 2px solid var(--border); margin-bottom: 48px; }
   .kicker {
@@ -261,7 +257,7 @@
   footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--ink-faint); font-size: 0.82rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
 </style>
 </head>
-<body class="is-readonly">
+<body>
 
 <div class="authbar">
   <div class="authbar-left">미분계수 실측 프로젝트 &middot; 공유 문서 <span id="versionTag" class="version-tag">불러오는 중…</span></div>
@@ -495,15 +491,15 @@
         <table>
           <thead><tr><th>팀원</th><th>역할</th><th>담당 업무</th></tr></thead>
           <tbody>
-            <tr><td>이도현</td><td class="editable-cell" contenteditable="false" data-role-idx="0" data-role-field="role">총괄 · 진행</td><td class="editable-cell" contenteditable="false" data-role-idx="0" data-role-field="task">전체 일정 관리, 두 실험 촬영·측정 총괄</td></tr>
-            <tr><td>우제연</td><td class="editable-cell" contenteditable="false" data-role-idx="1" data-role-field="role">영상 분석</td><td class="editable-cell" contenteditable="false" data-role-idx="1" data-role-field="task">프레임별 마커 통과 시각 추출 (실험 A, B)</td></tr>
-            <tr><td>김동윤</td><td class="editable-cell" contenteditable="false" data-role-idx="2" data-role-field="role">데이터 · 그래프</td><td class="editable-cell" contenteditable="false" data-role-idx="2" data-role-field="task">표 정리, x–t / v–t 그래프 작성</td></tr>
-            <tr><td>최장웅</td><td class="editable-cell" contenteditable="false" data-role-idx="3" data-role-field="role">계산 · 이론 검토</td><td class="editable-cell" contenteditable="false" data-role-idx="3" data-role-field="task">평균변화율·순간변화율 계산, 오차 검토</td></tr>
-            <tr><td>이종영</td><td class="editable-cell" contenteditable="false" data-role-idx="4" data-role-field="role">포스터 디자인</td><td class="editable-cell" contenteditable="false" data-role-idx="4" data-role-field="task">전지 8섹터 레이아웃 제작, 발표 자료 정리</td></tr>
+            <tr><td>이도현</td><td class="editable-cell" contenteditable="true" data-role-idx="0" data-role-field="role">총괄 · 진행</td><td class="editable-cell" contenteditable="true" data-role-idx="0" data-role-field="task">전체 일정 관리, 두 실험 촬영·측정 총괄</td></tr>
+            <tr><td>우제연</td><td class="editable-cell" contenteditable="true" data-role-idx="1" data-role-field="role">영상 분석</td><td class="editable-cell" contenteditable="true" data-role-idx="1" data-role-field="task">프레임별 마커 통과 시각 추출 (실험 A, B)</td></tr>
+            <tr><td>김동윤</td><td class="editable-cell" contenteditable="true" data-role-idx="2" data-role-field="role">데이터 · 그래프</td><td class="editable-cell" contenteditable="true" data-role-idx="2" data-role-field="task">표 정리, x–t / v–t 그래프 작성</td></tr>
+            <tr><td>최장웅</td><td class="editable-cell" contenteditable="true" data-role-idx="3" data-role-field="role">계산 · 이론 검토</td><td class="editable-cell" contenteditable="true" data-role-idx="3" data-role-field="task">평균변화율·순간변화율 계산, 오차 검토</td></tr>
+            <tr><td>이종영</td><td class="editable-cell" contenteditable="true" data-role-idx="4" data-role-field="role">포스터 디자인</td><td class="editable-cell" contenteditable="true" data-role-idx="4" data-role-field="task">전지 8섹터 레이아웃 제작, 발표 자료 정리</td></tr>
           </tbody>
         </table>
       </div>
-      <p style="margin-top:12px; font-size:0.86rem; color:var(--ink-faint);">로그인 후 역할·담당 업무 칸을 클릭하면 바로 수정할 수 있고, 이 링크로 들어온 모든 팀원에게 반영됩니다.</p>
+      <p style="margin-top:12px; font-size:0.86rem; color:var(--ink-faint);">역할·담당 업무 칸을 클릭하면 바로 수정할 수 있습니다. 로그인하면 이 링크로 들어온 모든 팀원에게 실시간으로 공유되고, 로그인 전에는 이 브라우저에만 저장됩니다.</p>
     </div>
 
     <div class="card">
@@ -563,15 +559,15 @@
       </div>
     </div>
     <div class="card">
-      <p class="lede">로그인하면 자신의 칸에 소감을 적을 수 있고, 저장하면 이 링크로 들어온 모든 팀원에게 실시간으로 보입니다.</p>
+      <p class="lede">지금 바로 자신의 칸에 소감을 적을 수 있습니다. 로그인하면 저장 내용이 이 링크로 들어온 모든 팀원에게 실시간으로 공유되고, 로그인 전에는 이 브라우저에만 저장됩니다.</p>
       <div class="reflection-grid" id="reflectionGrid">
-        <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">이도현</span><span class="reflect-status" data-reflect-status="0"></span></div><textarea class="reflect-text" data-reflect-idx="0" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요." disabled></textarea></div>
-        <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">우제연</span><span class="reflect-status" data-reflect-status="1"></span></div><textarea class="reflect-text" data-reflect-idx="1" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요." disabled></textarea></div>
-        <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">김동윤</span><span class="reflect-status" data-reflect-status="2"></span></div><textarea class="reflect-text" data-reflect-idx="2" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요." disabled></textarea></div>
-        <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">최장웅</span><span class="reflect-status" data-reflect-status="3"></span></div><textarea class="reflect-text" data-reflect-idx="3" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요." disabled></textarea></div>
-        <div class="reflect-card wide"><div class="reflect-head"><span class="reflect-name-label">이종영</span><span class="reflect-status" data-reflect-status="4"></span></div><textarea class="reflect-text" data-reflect-idx="4" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요." disabled></textarea></div>
+        <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">이도현</span><span class="reflect-status" data-reflect-status="0"></span></div><textarea class="reflect-text" data-reflect-idx="0" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요."></textarea></div>
+        <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">우제연</span><span class="reflect-status" data-reflect-status="1"></span></div><textarea class="reflect-text" data-reflect-idx="1" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요."></textarea></div>
+        <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">김동윤</span><span class="reflect-status" data-reflect-status="2"></span></div><textarea class="reflect-text" data-reflect-idx="2" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요."></textarea></div>
+        <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">최장웅</span><span class="reflect-status" data-reflect-status="3"></span></div><textarea class="reflect-text" data-reflect-idx="3" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요."></textarea></div>
+        <div class="reflect-card wide"><div class="reflect-head"><span class="reflect-name-label">이종영</span><span class="reflect-status" data-reflect-status="4"></span></div><textarea class="reflect-text" data-reflect-idx="4" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요."></textarea></div>
       </div>
-      <p style="margin-top:14px; font-size:0.86rem; color:var(--ink-faint);">각자 자신의 구글 계정으로 로그인해서 자신의 칸에 적어주세요. (다른 사람 칸도 기술적으로는 수정 가능하니, 서로 존중해주세요.)</p>
+      <p style="margin-top:14px; font-size:0.86rem; color:var(--ink-faint);">실시간 공유를 켜려면 각자 자신의 구글 계정으로 로그인해주세요. (다른 사람 칸도 기술적으로는 수정 가능하니, 서로 존중해주세요.)</p>
     </div>
   </section>
 

@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var TEAM = ['이도현', '우제연', '김동윤', '최장웅', '이종영'];
+  var LS_KEY = 'qed-derivative-project-draft-v1';
 
   var DEFAULTS = {
     version: 0,
@@ -38,7 +38,11 @@
     });
   }
 
-  var writable = false;
+  // Editing is always on — the video-analysis crew shouldn't have to wait for
+  // Firebase setup to start typing measurements. `cloudSynced` (not this flag)
+  // gates whether edits also go to Firestore.
+  var writable = true;
+  var cloudSynced = false;
   var saveTimer = null;
   var auth = null;
   var db = null;
@@ -75,14 +79,14 @@
       } else {
         rows +=
           '<tr data-step="' + s + '"><td class="num out-time">' + s + '</td>' +
-          '<td class="num"><input class="data-input dist-input" type="number" step="0.01" min="0" max="50" placeholder="m" disabled></td>' +
+          '<td class="num"><input class="data-input dist-input" type="number" step="0.01" min="0" max="50" placeholder="m"></td>' +
           '<td class="num out-dx">—</td><td class="num out-dt">—</td><td class="num out-v">—</td></tr>';
       }
     }
     return (
       '<div class="panel-meta-row">' +
-        '<label>이름</label><input class="data-input name-input runner-name" type="text" placeholder="주자 이름" disabled>' +
-        '<label>시간 간격</label><input class="data-input interval-input" type="number" step="0.1" min="0.1" value="1" disabled><span>초마다 기록</span>' +
+        '<label>이름</label><input class="data-input name-input runner-name" type="text" placeholder="주자 이름">' +
+        '<label>시간 간격</label><input class="data-input interval-input" type="number" step="0.1" min="0.1" value="1"><span>초마다 기록</span>' +
       '</div>' +
       '<div class="table-scroll"><table class="data-table">' +
         '<thead><tr><th class="num">시간 (s)</th><th class="num">이동 거리 (m)</th><th class="num">구간 Δx (m)</th><th class="num">구간 Δt (s)</th><th class="num">평균속도 (m/s)</th></tr></thead>' +
@@ -160,10 +164,10 @@
   function buildBallRow(d, t) {
     var tr = document.createElement('tr');
     tr.innerHTML =
-      '<td class="num"><input class="data-input dist-input" type="number" step="0.1" placeholder="cm" disabled></td>' +
-      '<td class="num"><input class="data-input time-input" type="number" step="0.01" placeholder="s" disabled></td>' +
+      '<td class="num"><input class="data-input dist-input" type="number" step="0.1" placeholder="cm"></td>' +
+      '<td class="num"><input class="data-input time-input" type="number" step="0.01" placeholder="s"></td>' +
       '<td class="num out-dx">—</td><td class="num out-dt">—</td><td class="num out-v">—</td>' +
-      '<td class="row-actions"><button type="button" class="remove-row-btn" aria-label="이 지점 삭제" disabled>×</button></td>';
+      '<td class="row-actions"><button type="button" class="remove-row-btn" aria-label="이 지점 삭제">×</button></td>';
     if (d !== undefined && d !== null) tr.querySelector('.dist-input').value = d;
     if (t !== undefined && t !== null) tr.querySelector('.time-input').value = t;
     return tr;
@@ -189,8 +193,8 @@
       if (i !== 0) panel.hidden = true;
       panel.innerHTML =
         '<div class="panel-meta-row">' +
-          '<label>공 종류</label><input class="data-input name-input ball-type" type="text" placeholder="예: 구슬" disabled>' +
-          '<label>경사각</label><input class="data-input ball-angle" type="number" step="1" placeholder="°" disabled><span>°</span>' +
+          '<label>공 종류</label><input class="data-input name-input ball-type" type="text" placeholder="예: 구슬">' +
+          '<label>경사각</label><input class="data-input ball-angle" type="number" step="1" placeholder="°"><span>°</span>' +
         '</div>' +
         '<div class="table-scroll"><table class="data-table">' +
           '<thead><tr><th class="num">지점 (cm)</th><th class="num">통과 시각 (s)</th><th class="num">구간 Δx (cm)</th><th class="num">구간 Δt (s)</th><th class="num">평균속도 (cm/s)</th><th></th></tr></thead>' +
@@ -198,7 +202,7 @@
           '<tfoot><tr class="summary-row"><td class="num" colspan="2">전체 구간 (처음→마지막 지점)</td>' +
           '<td class="num out-dx-total">—</td><td class="num out-dt-total">—</td><td class="num out-v-total">—</td><td></td></tr></tfoot>' +
         '</table></div>' +
-        '<button type="button" class="add-row-btn" disabled>+ 지점 추가</button>';
+        '<button type="button" class="add-row-btn">+ 지점 추가</button>';
       var body = panel.querySelector('.ballBody');
       defaultBallRows().forEach(function (r) { body.appendChild(buildBallRow(r.d, r.t)); });
       panels.appendChild(panel);
@@ -340,7 +344,6 @@
         if (!focusedInfo) {
           tbody.innerHTML = '';
           (t.rows && t.rows.length ? t.rows : defaultBallRows()).forEach(function (row) { tbody.appendChild(buildBallRow(row.d, row.t)); });
-          applyEditableState();
         }
         calcBallPanel(panel);
         if (focusedInfo && tbody.children[focusedInfo.idx]) {
@@ -350,17 +353,6 @@
         }
       });
     }
-  }
-
-  function applyEditableState() {
-    document.querySelectorAll('.editable-cell').forEach(function (el) { el.contentEditable = writable ? 'true' : 'false'; });
-    document.querySelectorAll('.reflect-text').forEach(function (el) { el.disabled = !writable; });
-    document.querySelectorAll('.data-input').forEach(function (el) {
-      if (el.classList.contains('locked-input')) { el.disabled = true; return; }
-      el.disabled = !writable;
-    });
-    document.querySelectorAll('.add-row-btn, .remove-row-btn').forEach(function (el) { el.disabled = !writable; });
-    document.body.classList.toggle('is-readonly', !writable);
   }
 
   /* ---------- Version tag ---------- */
@@ -376,22 +368,38 @@
   function updateVersionTag(data) {
     var tag = document.getElementById('versionTag');
     if (!tag) return;
-    var v = data.version || 0;
+    if (!cloudSynced) { tag.textContent = '로컬 저장 모드 (로그인 시 실시간 공유)'; return; }
+    var v = (data && data.version) || 0;
     var parts = ['v' + v];
-    if (data.updatedBy) parts.push(data.updatedBy);
-    if (data.updatedAt && typeof data.updatedAt.toDate === 'function') parts.push(timeAgo(data.updatedAt.toDate()));
+    if (data && data.updatedBy) parts.push(data.updatedBy);
+    if (data && data.updatedAt && typeof data.updatedAt.toDate === 'function') parts.push(timeAgo(data.updatedAt.toDate()));
     tag.textContent = parts.join(' · ');
   }
 
-  /* ---------- Save ---------- */
+  /* ---------- Local persistence (always on) ---------- */
+  function saveLocal() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(readState())); } catch (e) {}
+  }
+  function loadLocal() {
+    try {
+      var raw = localStorage.getItem(LS_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
+  /* ---------- Save (local always, cloud when signed in) ---------- */
   function scheduleSave() {
-    if (!writable) return;
     clearTimeout(saveTimer);
-    setBanner('저장 중…', 'info');
+    setBanner(cloudSynced ? '저장 중…' : '이 브라우저에 저장 중…', 'info');
     saveTimer = setTimeout(save, 900);
   }
   function save() {
-    if (!writable || !docRef) return;
+    saveLocal();
+    if (!cloudSynced || !docRef) {
+      setBanner('이 브라우저에 저장됨 (로그인하면 모두와 공유됩니다)', 'info');
+      setTimeout(hideBanner, 1800);
+      return;
+    }
     var data = readState();
     data.version = firebase.firestore.FieldValue.increment(1);
     data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
@@ -401,14 +409,13 @@
       setTimeout(hideBanner, 1600);
     }).catch(function (err) {
       console.error(err);
-      setBanner('저장 실패 — 네트워크나 권한을 확인해주세요', 'warn');
+      setBanner('공유 저장 실패 — 이 브라우저에는 저장되어 있어요', 'warn');
     });
   }
 
   /* ---------- Event wiring ---------- */
   function wireEvents() {
     document.addEventListener('input', function (e) {
-      if (!writable) return;
       if (e.target.classList.contains('editable-cell')) { scheduleSave(); return; }
       if (e.target.classList.contains('reflect-text')) { scheduleSave(); return; }
       var panelA = e.target.closest('#panelsA .tab-panel');
@@ -418,7 +425,6 @@
     });
 
     document.addEventListener('click', function (e) {
-      if (!writable) return;
       if (e.target.classList.contains('remove-row-btn')) {
         var tbody = e.target.closest('.ballBody');
         if (tbody && tbody.children.length > 2) {
@@ -433,7 +439,6 @@
         var panel = e.target.closest('.tab-panel');
         var tbody = panel.querySelector('.ballBody');
         tbody.appendChild(buildBallRow(null, null));
-        applyEditableState();
         calcBallPanel(panel);
         scheduleSave();
       }
@@ -446,10 +451,15 @@
     buildPanelsB();
     wireEvents();
 
+    var draft = loadLocal();
+    if (draft) applyState(draft);
+    else { calcAllPanels(); }
+    updateVersionTag(null);
+
     var cfg = window.FIREBASE_CONFIG;
     var isPlaceholder = !cfg || cfg.apiKey === 'YOUR_API_KEY';
     if (isPlaceholder) {
-      showSetupBanner('Firebase 설정이 아직 안 되어 있어요. firebase-config.js에 프로젝트 값을 채워주세요. (README.md 참고)');
+      showSetupBanner('Firebase 설정이 아직 안 되어 있어요 — 지금도 입력·계산은 되지만 이 브라우저에만 저장됩니다. 여러 명과 실시간 공유하려면 firebase-config.js를 채워주세요 (README.md 참고).');
       var loginBtn = document.getElementById('loginBtn');
       if (loginBtn) loginBtn.disabled = true;
       return;
@@ -479,29 +489,36 @@
         loginBtn.hidden = true;
         userChip.hidden = false;
         userName.textContent = (user.displayName || user.email || '팀원') + '님';
-        writable = true;
-        applyEditableState();
+        cloudSynced = true;
         if (!unsubscribe) {
           unsubscribe = docRef.onSnapshot(function (snap) {
             if (snap.exists) {
               applyState(snap.data());
               updateVersionTag(snap.data());
             } else {
-              docRef.set(DEFAULTS).catch(function (err) { console.error(err); });
+              // First person to sign in seeds the shared doc from whatever
+              // is in this browser's local draft (or the blank defaults).
+              var seed = loadLocal() || DEFAULTS;
+              docRef.set(seed).catch(function (err) { console.error(err); });
             }
           }, function (err) {
             console.error(err);
-            setBanner('데이터를 불러오지 못했어요 — Firestore 보안 규칙을 확인해주세요.', 'warn');
+            setBanner('공유 데이터를 불러오지 못했어요 — Firestore 보안 규칙을 확인해주세요.', 'warn');
           });
         }
       } else {
         loginBtn.hidden = false;
         userChip.hidden = true;
-        writable = false;
-        applyEditableState();
+        cloudSynced = false;
+        updateVersionTag(null);
         if (unsubscribe) { unsubscribe(); unsubscribe = null; }
       }
     });
+  }
+
+  function calcAllPanels() {
+    document.querySelectorAll('#panelsA .tab-panel').forEach(calcRunnerPanel);
+    document.querySelectorAll('#panelsB .tab-panel').forEach(calcBallPanel);
   }
 
   if (document.readyState === 'loading') {
