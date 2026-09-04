@@ -79,15 +79,12 @@
     display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   }
   .authbar-left { font-family:'JetBrains Mono',monospace; font-size:0.76rem; color:var(--ink-faint); letter-spacing:0.06em; text-transform:uppercase; }
-  .auth-btn {
-    font-family:'Gowun Dodum',sans-serif; font-size:0.86rem; font-weight:600;
-    padding:8px 18px; border-radius:999px; cursor:pointer; border:1px solid var(--track);
-    background:var(--track); color:#fff; display:inline-flex; align-items:center; gap:8px;
+  .sync-status {
+    font-family:'JetBrains Mono',monospace; font-size:0.76rem; font-weight:600;
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card-alt); color:var(--ink-soft);
   }
-  .auth-btn:hover { filter: brightness(1.05); }
-  .auth-btn.ghost { background:var(--card); color:var(--ink); border-color:var(--border); }
-  .user-chip { font-size:0.86rem; color:var(--ink-soft); display:flex; align-items:center; gap:10px; }
-  .user-chip b { color:var(--ink); font-family:'Gowun Batang',serif; }
+  .sync-status.on { background:var(--slope-soft); border-color:var(--slope); color:var(--slope); }
   [hidden] { display:none !important; }
 
   /* ---------- Notice banners ---------- */
@@ -261,13 +258,7 @@
 
 <div class="authbar">
   <div class="authbar-left">미분계수 실측 프로젝트 &middot; 공유 문서 <span id="versionTag" class="version-tag">불러오는 중…</span></div>
-  <div>
-    <button id="loginBtn" class="auth-btn">Google로 로그인</button>
-    <div id="userChip" class="user-chip" hidden>
-      <b id="userName"></b>
-      <button id="logoutBtn" class="auth-btn ghost">로그아웃</button>
-    </div>
-  </div>
+  <div id="syncStatus" class="sync-status">로컬 저장 모드</div>
 </div>
 <div id="setupBanner" class="notice-banner warn"></div>
 <div id="syncBanner" class="notice-banner"></div>
@@ -499,7 +490,7 @@
           </tbody>
         </table>
       </div>
-      <p style="margin-top:12px; font-size:0.86rem; color:var(--ink-faint);">역할·담당 업무 칸을 클릭하면 바로 수정할 수 있습니다. 로그인하면 이 링크로 들어온 모든 팀원에게 실시간으로 공유되고, 로그인 전에는 이 브라우저에만 저장됩니다.</p>
+      <p style="margin-top:12px; font-size:0.86rem; color:var(--ink-faint);">역할·담당 업무 칸을 클릭하면 바로 수정할 수 있고, 이 링크로 들어온 모든 팀원에게 실시간으로 공유됩니다.</p>
     </div>
 
     <div class="card">
@@ -559,7 +550,7 @@
       </div>
     </div>
     <div class="card">
-      <p class="lede">지금 바로 자신의 칸에 소감을 적을 수 있습니다. 로그인하면 저장 내용이 이 링크로 들어온 모든 팀원에게 실시간으로 공유되고, 로그인 전에는 이 브라우저에만 저장됩니다.</p>
+      <p class="lede">지금 바로 자신의 칸에 소감을 적을 수 있습니다. 저장한 내용은 이 링크로 들어온 모든 팀원에게 실시간으로 공유됩니다.</p>
       <div class="reflection-grid" id="reflectionGrid">
         <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">이도현</span><span class="reflect-status" data-reflect-status="0"></span></div><textarea class="reflect-text" data-reflect-idx="0" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요."></textarea></div>
         <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">우제연</span><span class="reflect-status" data-reflect-status="1"></span></div><textarea class="reflect-text" data-reflect-idx="1" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요."></textarea></div>
@@ -567,7 +558,7 @@
         <div class="reflect-card"><div class="reflect-head"><span class="reflect-name-label">최장웅</span><span class="reflect-status" data-reflect-status="3"></span></div><textarea class="reflect-text" data-reflect-idx="3" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요."></textarea></div>
         <div class="reflect-card wide"><div class="reflect-head"><span class="reflect-name-label">이종영</span><span class="reflect-status" data-reflect-status="4"></span></div><textarea class="reflect-text" data-reflect-idx="4" placeholder="오늘 실험에서 느낀 점, 배운 점을 자유롭게 적어보세요."></textarea></div>
       </div>
-      <p style="margin-top:14px; font-size:0.86rem; color:var(--ink-faint);">실시간 공유를 켜려면 각자 자신의 구글 계정으로 로그인해주세요. (다른 사람 칸도 기술적으로는 수정 가능하니, 서로 존중해주세요.)</p>
+      <p style="margin-top:14px; font-size:0.86rem; color:var(--ink-faint);">별도 로그인 없이 이 링크로 들어온 사람은 누구나 수정할 수 있어요. 다른 사람 칸도 기술적으로는 수정 가능하니, 서로 존중해주세요.</p>
     </div>
   </section>
 
@@ -579,7 +570,6 @@
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="app.js"></script>

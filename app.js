@@ -44,7 +44,6 @@
   var writable = true;
   var cloudSynced = false;
   var saveTimer = null;
-  var auth = null;
   var db = null;
   var docRef = null;
   var unsubscribe = null;
@@ -368,12 +367,17 @@
   function updateVersionTag(data) {
     var tag = document.getElementById('versionTag');
     if (!tag) return;
-    if (!cloudSynced) { tag.textContent = '로컬 저장 모드 (로그인 시 실시간 공유)'; return; }
+    if (!cloudSynced) { tag.textContent = '로컬 저장 모드'; return; }
     var v = (data && data.version) || 0;
     var parts = ['v' + v];
-    if (data && data.updatedBy) parts.push(data.updatedBy);
     if (data && data.updatedAt && typeof data.updatedAt.toDate === 'function') parts.push(timeAgo(data.updatedAt.toDate()));
     tag.textContent = parts.join(' · ');
+  }
+  function updateSyncStatus() {
+    var el = document.getElementById('syncStatus');
+    if (!el) return;
+    el.textContent = cloudSynced ? '공유 편집 켜짐 — 모두에게 실시간 반영' : '로컬 저장 모드';
+    el.classList.toggle('on', cloudSynced);
   }
 
   /* ---------- Local persistence (always on) ---------- */
@@ -387,7 +391,7 @@
     } catch (e) { return null; }
   }
 
-  /* ---------- Save (local always, cloud when signed in) ---------- */
+  /* ---------- Save (local always, cloud whenever Firestore is configured) ---------- */
   function scheduleSave() {
     clearTimeout(saveTimer);
     setBanner(cloudSynced ? '저장 중…' : '이 브라우저에 저장 중…', 'info');
@@ -396,14 +400,13 @@
   function save() {
     saveLocal();
     if (!cloudSynced || !docRef) {
-      setBanner('이 브라우저에 저장됨 (로그인하면 모두와 공유됩니다)', 'info');
+      setBanner('이 브라우저에 저장됨 (Firebase 설정 후 모두와 공유됩니다)', 'info');
       setTimeout(hideBanner, 1800);
       return;
     }
     var data = readState();
     data.version = firebase.firestore.FieldValue.increment(1);
     data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-    data.updatedBy = (auth.currentUser && (auth.currentUser.displayName || auth.currentUser.email)) || '알 수 없음';
     docRef.set(data, { merge: true }).then(function () {
       setBanner('모두에게 저장됨', 'ok');
       setTimeout(hideBanner, 1600);
@@ -455,64 +458,36 @@
     if (draft) applyState(draft);
     else { calcAllPanels(); }
     updateVersionTag(null);
+    updateSyncStatus();
 
     var cfg = window.FIREBASE_CONFIG;
     var isPlaceholder = !cfg || cfg.apiKey === 'YOUR_API_KEY';
     if (isPlaceholder) {
       showSetupBanner('Firebase 설정이 아직 안 되어 있어요 — 지금도 입력·계산은 되지만 이 브라우저에만 저장됩니다. 여러 명과 실시간 공유하려면 firebase-config.js를 채워주세요 (README.md 참고).');
-      var loginBtn = document.getElementById('loginBtn');
-      if (loginBtn) loginBtn.disabled = true;
       return;
     }
 
     firebase.initializeApp(cfg);
-    auth = firebase.auth();
     db = firebase.firestore();
     docRef = db.collection('shared').doc('project');
+    cloudSynced = true;
+    updateSyncStatus();
 
-    var loginBtn = document.getElementById('loginBtn');
-    var logoutBtn = document.getElementById('logoutBtn');
-    var userChip = document.getElementById('userChip');
-    var userName = document.getElementById('userName');
-
-    loginBtn.addEventListener('click', function () {
-      var provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch(function (err) {
-        console.error(err);
-        setBanner('로그인에 실패했어요: ' + err.message, 'warn');
-      });
-    });
-    logoutBtn.addEventListener('click', function () { auth.signOut(); });
-
-    auth.onAuthStateChanged(function (user) {
-      if (user) {
-        loginBtn.hidden = true;
-        userChip.hidden = false;
-        userName.textContent = (user.displayName || user.email || '팀원') + '님';
-        cloudSynced = true;
-        if (!unsubscribe) {
-          unsubscribe = docRef.onSnapshot(function (snap) {
-            if (snap.exists) {
-              applyState(snap.data());
-              updateVersionTag(snap.data());
-            } else {
-              // First person to sign in seeds the shared doc from whatever
-              // is in this browser's local draft (or the blank defaults).
-              var seed = loadLocal() || DEFAULTS;
-              docRef.set(seed).catch(function (err) { console.error(err); });
-            }
-          }, function (err) {
-            console.error(err);
-            setBanner('공유 데이터를 불러오지 못했어요 — Firestore 보안 규칙을 확인해주세요.', 'warn');
-          });
-        }
+    unsubscribe = docRef.onSnapshot(function (snap) {
+      if (snap.exists) {
+        applyState(snap.data());
+        updateVersionTag(snap.data());
       } else {
-        loginBtn.hidden = false;
-        userChip.hidden = true;
-        cloudSynced = false;
-        updateVersionTag(null);
-        if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+        // Nobody has saved to the shared document yet — seed it from
+        // whatever is already in this browser's local draft (or blank).
+        var seed = loadLocal() || DEFAULTS;
+        docRef.set(seed).catch(function (err) { console.error(err); });
       }
+    }, function (err) {
+      console.error(err);
+      cloudSynced = false;
+      updateSyncStatus();
+      showSetupBanner('공유 데이터를 불러오지 못했어요 — Firestore 보안 규칙을 확인해주세요. (지금은 이 브라우저에만 저장됩니다)');
     });
   }
 
