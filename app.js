@@ -38,6 +38,73 @@
     });
   }
 
+  /* ---------- Quadratic regression (least squares) ---------- */
+  function det3(m) {
+    return m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+           m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+           m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+  }
+  function solve3x3(A, B) {
+    var D = det3(A);
+    if (Math.abs(D) < 1e-9) return null;
+    function withCol(col, vec) {
+      return A.map(function (row, i) {
+        var r = row.slice();
+        r[col] = vec[i];
+        return r;
+      });
+    }
+    return [det3(withCol(0, B)) / D, det3(withCol(1, B)) / D, det3(withCol(2, B)) / D];
+  }
+  // Fits y = a*x^2 + b*x + c by least squares. Needs >= 3 points and returns
+  // null when there aren't enough, or when the points are degenerate (e.g.
+  // all at the same x).
+  function quadraticFit(points) {
+    var n = points.length;
+    if (n < 3) return null;
+    var Sx = 0, Sx2 = 0, Sx3 = 0, Sx4 = 0, Sy = 0, Sxy = 0, Sx2y = 0;
+    points.forEach(function (p) {
+      var x = p.x, y = p.y, x2 = x * x;
+      Sx += x; Sx2 += x2; Sx3 += x2 * x; Sx4 += x2 * x2;
+      Sy += y; Sxy += x * y; Sx2y += x2 * y;
+    });
+    var sol = solve3x3(
+      [[Sx4, Sx3, Sx2], [Sx3, Sx2, Sx], [Sx2, Sx, n]],
+      [Sx2y, Sxy, Sy]
+    );
+    if (!sol) return null;
+    var a = sol[0], b = sol[1], c = sol[2];
+    var yMean = Sy / n, ssTot = 0, ssRes = 0;
+    points.forEach(function (p) {
+      var yHat = a * p.x * p.x + b * p.x + c;
+      ssRes += (p.y - yHat) * (p.y - yHat);
+      ssTot += (p.y - yMean) * (p.y - yMean);
+    });
+    var r2 = ssTot === 0 ? 1 : 1 - ssRes / ssTot;
+    return { a: a, b: b, c: c, r2: r2, n: n };
+  }
+  function signed(v, digits) {
+    var n = Number(v.toFixed(digits));
+    return (n >= 0 ? '+ ' : '- ') + Math.abs(n).toFixed(digits);
+  }
+  function renderRegression(box, points, xUnit, yUnit) {
+    if (!box) return;
+    var eqEl = box.querySelector('.reg-eq');
+    var r2El = box.querySelector('.reg-r2');
+    var derivEl = box.querySelector('.reg-deriv');
+    var fit = quadraticFit(points);
+    if (!fit) {
+      eqEl.textContent = '데이터가 부족합니다 (서로 다른 지점 3곳 이상 입력하면 계산됩니다)';
+      r2El.textContent = '';
+      derivEl.textContent = '';
+      return;
+    }
+    var a = fit.a, b = fit.b;
+    eqEl.textContent = 's(t) = ' + a.toFixed(4) + 't² ' + signed(b, 4) + 't ' + signed(fit.c, 4) + '  (' + yUnit + ')';
+    r2El.textContent = 'R² = ' + fit.r2.toFixed(4) + '  (n = ' + fit.n + ')';
+    derivEl.textContent = "s'(t) = " + signed(2 * a, 4) + 't ' + signed(b, 4) + '  →  ' + yUnit + '/' + xUnit;
+  }
+
   // Editing is always on — the video-analysis crew shouldn't have to wait for
   // Firebase setup to start typing measurements. `cloudSynced` (not this flag)
   // gates whether edits also go to Firestore.
@@ -92,7 +159,13 @@
         '<tbody>' + rows + '</tbody>' +
         '<tfoot><tr class="summary-row"><td class="num" colspan="2">전체 구간 (0→마지막 기록 시간)</td>' +
         '<td class="num out-dx-total">—</td><td class="num out-dt-total">—</td><td class="num out-v-total">—</td></tr></tfoot>' +
-      '</table></div>'
+      '</table></div>' +
+      '<div class="regression-box">' +
+        '<p class="subhead">회귀분석 (최소제곱법 · 2차)</p>' +
+        '<div class="reg-eq mono">데이터가 부족합니다 (서로 다른 지점 3곳 이상 입력하면 계산됩니다)</div>' +
+        '<div class="reg-r2 mono"></div>' +
+        '<div class="reg-deriv mono"></div>' +
+      '</div>'
     );
   }
 
@@ -157,6 +230,10 @@
     } else {
       totalDx.textContent = '—'; totalDt.textContent = '—'; totalV.textContent = '—';
     }
+
+    var points = [];
+    dist.forEach(function (d, i) { if (d !== null) points.push({ x: i * interval, y: d }); });
+    renderRegression(panel.querySelector('.regression-box'), points, 's', 'm');
   }
 
   /* ---------- Panel builders (Table B: 3 ball types) ---------- */
@@ -201,7 +278,13 @@
           '<tfoot><tr class="summary-row"><td class="num" colspan="2">전체 구간 (처음→마지막 지점)</td>' +
           '<td class="num out-dx-total">—</td><td class="num out-dt-total">—</td><td class="num out-v-total">—</td><td></td></tr></tfoot>' +
         '</table></div>' +
-        '<button type="button" class="add-row-btn">+ 지점 추가</button>';
+        '<button type="button" class="add-row-btn">+ 지점 추가</button>' +
+        '<div class="regression-box">' +
+          '<p class="subhead">회귀분석 (최소제곱법 · 2차)</p>' +
+          '<div class="reg-eq mono">데이터가 부족합니다 (서로 다른 지점 3곳 이상 입력하면 계산됩니다)</div>' +
+          '<div class="reg-r2 mono"></div>' +
+          '<div class="reg-deriv mono"></div>' +
+        '</div>';
       var body = panel.querySelector('.ballBody');
       defaultBallRows().forEach(function (r) { body.appendChild(buildBallRow(r.d, r.t)); });
       panels.appendChild(panel);
@@ -241,6 +324,9 @@
     } else {
       totalDx.textContent = '—'; totalDt.textContent = '—'; totalV.textContent = '—';
     }
+
+    var points = data.filter(function (r) { return r.d !== null && r.t !== null; }).map(function (r) { return { x: r.t, y: r.d }; });
+    renderRegression(panel.querySelector('.regression-box'), points, 's', 'cm');
   }
 
   function wireTabs(tabsEl, panelsEl) {

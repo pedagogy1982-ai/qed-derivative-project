@@ -182,6 +182,12 @@
   .interval-control { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 0.88rem; color: var(--ink-soft); }
   .interval-control input { width: 56px; }
 
+  .regression-box { margin-top: 20px; padding: 16px 18px; background: var(--card-alt); border: 1px solid var(--border); border-radius: 10px; }
+  .regression-box .subhead { margin-top: 0; }
+  .regression-box .reg-eq { color: var(--ink); font-size: 0.92rem; }
+  .regression-box .reg-r2 { color: var(--ink-soft); font-size: 0.86rem; margin-top: 6px; }
+  .regression-box .reg-deriv { color: var(--slope); font-size: 0.92rem; margin-top: 6px; font-weight: 600; }
+
   /* ---------- Experiment cards ---------- */
   .exp-card { border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
   .exp-head { padding: 22px 28px; display: flex; align-items: center; gap: 14px; }
@@ -325,10 +331,74 @@
     </div>
   </section>
 
-  <!-- 02 -->
+  <!-- 02 지식 코너 -->
   <section>
     <div class="sec-head">
       <span class="sec-num">02</span>
+      <div>
+        <h2 class="sec-title">지식 코너 · 회귀추세선</h2>
+        <div class="sec-note">측정한 점들로부터 하나의 식을 얻는 방법</div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="subhead" style="margin-top:0;">목적</p>
+      <p>구간별로 Δx/Δt를 계산하는 방식은 두 점 사이의 어림값일 뿐입니다. 측정한 (시간, 위치) 점들을 대표하는 <b>하나의 식 s(t)</b>를 구할 수 있다면, 그 식을 미분해서 <b>어느 순간의 순간속도든 정확히 계산</b>할 수 있습니다. 이때 데이터로부터 식을 얻는 방법이 회귀추세선입니다.</p>
+
+      <p class="subhead">원리 — 최소제곱법</p>
+      <div class="theory-grid">
+        <div>
+          <p>흩어진 데이터 점들과 예상 곡선 사이의 차이(오차, 잔차)를 구하고, 그 <b>오차의 제곱합이 가장 작아지도록</b> 곡선의 식을 결정하는 방법입니다. 스프레드시트·계산기의 "추세선 추가" 기능이 바로 이 원리로 동작합니다.</p>
+
+          <p class="subhead">어떤 차수를 쓸까?</p>
+          <ul class="plain">
+            <li><b>실험 B(공 굴리기)</b> — 등가속도 운동이라 <b>2차식</b> s(t) = at² + bt + c 가 물리 법칙과 잘 맞습니다.</li>
+            <li><b>실험 A(달리기)</b> — 사람은 초반에 가속하다 속도가 일정해지므로 2차식이 완벽히 맞진 않지만, 전체 경향과 구간별 순간속도를 보는 데는 여전히 유용합니다.</li>
+          </ul>
+
+          <p class="subhead">미분과의 연결</p>
+          <div class="formula-box">
+            <span class="label">회귀식이 s(t) = at² + bt + c 라면</span>
+            \[ s'(t) = 2at + b \]
+          </div>
+          <p>회귀식을 한 번 구하면 특정 순간 t를 대입해 그 순간의 순간속도(미분계수)를 바로 계산할 수 있습니다. 아래 실험 A·B의 데이터 표에는 입력하는 즉시 이 회귀식과 R², 미분한 속도 함수가 자동으로 계산되어 나타납니다.</p>
+        </div>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 300 200" role="img" aria-label="산점도 데이터에 최소제곱법으로 맞춘 회귀곡선과 오차">
+            <line x1="30" y1="10" x2="30" y2="180" stroke="var(--ink-faint)" stroke-width="1"/>
+            <line x1="30" y1="180" x2="290" y2="180" stroke="var(--ink-faint)" stroke-width="1"/>
+            <text x="8" y="20" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--ink-faint)">s</text>
+            <text x="278" y="195" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--ink-faint)">t</text>
+
+            <path d="M 30,170 Q 150,150 270,30" fill="none" stroke="var(--slope)" stroke-width="2.5"/>
+
+            <line x1="130" y1="140" x2="130" y2="133" stroke="var(--track)" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <line x1="230" y1="70" x2="230" y2="64" stroke="var(--track)" stroke-width="1.5" stroke-dasharray="3 3"/>
+
+            <circle cx="60" cy="162" r="3.5" fill="var(--ink)"/>
+            <circle cx="95" cy="150" r="3.5" fill="var(--ink)"/>
+            <circle cx="130" cy="140" r="3.5" fill="var(--ink)"/>
+            <circle cx="160" cy="120" r="3.5" fill="var(--ink)"/>
+            <circle cx="195" cy="100" r="3.5" fill="var(--ink)"/>
+            <circle cx="230" cy="70" r="3.5" fill="var(--ink)"/>
+            <circle cx="260" cy="45" r="3.5" fill="var(--ink)"/>
+          </svg>
+          <div class="legend">
+            <span><span class="swatch" style="background:var(--ink); border-radius:50%; width:8px; height:8px;"></span>측정한 데이터 점</span>
+            <span><span class="swatch" style="background:var(--slope);"></span>회귀곡선(최소제곱법)</span>
+            <span><span class="swatch" style="background:var(--track);"></span>오차(잔차)</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="subhead">결정계수 R²</p>
+      <p style="margin-bottom:0;">회귀식이 데이터를 얼마나 잘 설명하는지 나타내는 값으로 <span class="mono">0~1</span> 사이입니다. 1에 가까울수록 데이터가 회귀곡선 위에 정확히 놓인다는 뜻이고, 0에 가까우면 곡선이 데이터를 잘 설명하지 못한다는 뜻입니다.</p>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">03</span>
       <div>
         <h2 class="sec-title">실험 설계 개요</h2>
         <div class="sec-note">같은 원리, 두 가지 운동으로 검증한다</div>
@@ -351,10 +421,10 @@
     </div>
   </section>
 
-  <!-- 03 실험 A -->
+  <!-- 04 실험 A -->
   <section>
     <div class="sec-head">
-      <span class="sec-num">03</span>
+      <span class="sec-num">04</span>
       <div>
         <h2 class="sec-title">실험 A · 50m 전력질주</h2>
         <div class="sec-note">달리는 학생의 순간속도를 미분계수로 확인</div>
@@ -402,10 +472,10 @@
     </div>
   </section>
 
-  <!-- 04 실험 B -->
+  <!-- 05 실험 B -->
   <section>
     <div class="sec-head">
-      <span class="sec-num alt">04</span>
+      <span class="sec-num alt">05</span>
       <div>
         <h2 class="sec-title">실험 B · 경사면 공 굴리기</h2>
         <div class="sec-note">등가속도 운동에서도 같은 방법이 통하는지 검증</div>
@@ -447,10 +517,10 @@
     </div>
   </section>
 
-  <!-- 05 실행 계획 -->
+  <!-- 06 실행 계획 -->
   <section>
     <div class="sec-head">
-      <span class="sec-num">05</span>
+      <span class="sec-num">06</span>
       <div>
         <h2 class="sec-title">실행 계획</h2>
         <div class="sec-note">준비물 · 역할 · 일정을 한 번에 정리</div>
@@ -505,10 +575,10 @@
     </div>
   </section>
 
-  <!-- 06 포스터 -->
+  <!-- 07 포스터 -->
   <section>
     <div class="sec-head">
-      <span class="sec-num">06</span>
+      <span class="sec-num">07</span>
       <div>
         <h2 class="sec-title">발표 포스터 기획 · 전지 8섹터</h2>
         <div class="sec-note">이 설계보고서의 내용을 8칸에 어떻게 나눠 담을지</div>
@@ -540,10 +610,10 @@
     </div>
   </section>
 
-  <!-- 07 소감문 -->
+  <!-- 08 소감문 -->
   <section>
     <div class="sec-head">
-      <span class="sec-num alt">07</span>
+      <span class="sec-num alt">08</span>
       <div>
         <h2 class="sec-title">모임 소감문</h2>
         <div class="sec-note">함께 모여 실험한 뒤, 각자의 생각을 남겨보세요</div>
